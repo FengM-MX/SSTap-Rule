@@ -29,6 +29,8 @@ process_file() {
     local filename=$(basename "$filepath")
     local name_no_ext="${filename%.*}"
     local output_yaml="$OUTPUT_DIR/${name_no_ext}.yaml"
+    local output_list="$OUTPUT_DIR/${name_no_ext}.list"
+    local output_mrs="$OUTPUT_DIR/${name_no_ext}.mrs"
 
     echo "🔄 [$((i+1))/$total_files] 正在处理文件: ${file_list[i]}"
     # 统计文件总行数
@@ -45,10 +47,10 @@ process_file() {
             # 跳过注释
             [[ "$line" =~ ^[[:space:]]*# ]] && continue
             # 并行写入结果文件
-            printf "%d\0%d\0%s\0%s\0" "$i" "$file_total_count" "${line}" "$output_yaml"
+            printf "%d\0%d\0%s\0%s\0%s\0" "$i" "$file_total_count" "${line}" "$output_yaml" "$output_list"
             # 行号+1
             i=$((i+1))
-        done < "$filepath" | parallel -j${JOBS} -0 -n4 'check_line {1} {2} {3} {4}'
+        done < "$filepath" | parallel -j${JOBS} -0 -n5 'check_line {1} {2} {3} {4} {5}'
     else
         while IFS= read -r line || [[ -n "$line" ]]; do
             # 跳过注释
@@ -59,7 +61,7 @@ process_file() {
             i=$((i+1))
         done < "$filepath"
     fi
-
+    mihomo convert-ruleset ipcidr yaml "$output_yaml" "$output_mrs"
 }
 
 # 函数校验单行CIDR地址，并写入结果文件
@@ -68,6 +70,7 @@ check_line(){
     local total="$2"
     local line="$3"
     local output_yaml="$4"
+    local output_list="$5"
     #echo ">>>> [$index/$total] 正在处理文件 $output_yaml 第 $index 行" >&2
     # 提取所有疑似 CIDR
     echo "$line" | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}/([0-9]|[1-2][0-9]|3[0-2])\b' | \
@@ -85,6 +88,7 @@ check_line(){
         if [[ "$valid" == true ]]; then
             echo "$cidr" >> "$TEMP_IP_LIST"
             echo "  - $cidr" >> "$output_yaml"
+            echo "$cidr" >> "$output_list"
         fi
     done
 }
