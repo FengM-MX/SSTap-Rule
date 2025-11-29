@@ -5,9 +5,9 @@
 # =============================
 RULES_DIR="rules"
 OUTPUT_DIR="rules-clash"
-MERGED_YAML="$OUTPUT_DIR/category-games-foreign.yml"
-MERGED_LIST="$OUTPUT_DIR/category-games-foreign.list"
-MERGED_MRS="$OUTPUT_DIR/category-games-foreign.mrs"
+MERGED_YAML="$OUTPUT_DIR/category-games-tatol.yml"
+MERGED_LIST="$OUTPUT_DIR/category-games-tatol.list"
+MERGED_MRS="$OUTPUT_DIR/category-games-tatol.mrs"
 
 # 并行任务数（根据 CPU 核心自动设置，也可手动调整）
 JOBS=$(nproc --all)
