@@ -5,7 +5,9 @@
 # =============================
 RULES_DIR="rules"
 OUTPUT_DIR="rules-clash"
-MERGED_YAML="category-games-foreign.yml"
+MERGED_YAML="$OUTPUT_DIR/category-games-foreign.yml"
+MERGED_LIST="$OUTPUT_DIR/category-games-foreign.list"
+MERGED_MRS="$OUTPUT_DIR/category-games-foreign.mrs"
 
 # 并行任务数（根据 CPU 核心自动设置，也可手动调整）
 JOBS=$(nproc --all)
@@ -172,18 +174,21 @@ done
 echo "🔧 正在对所有 CIDR 地址进行排序、去重并生成最终配置..."
 
 # 去重 + 排序
-sort -u "$TEMP_IP_LIST" > "${TEMP_IP_LIST}.uniq"
+sort -u "$TEMP_IP_LIST" > "$MERGED_LIST"
 
 # 生成最终 YAML 文件
 {
     echo "payload:"
     while read -r cidr; do
         echo "  - $cidr"
-    done < "${TEMP_IP_LIST}.uniq"
+    done < "$MERGED_LIST"
 } > "$MERGED_YAML"
 
+#生成mrs文件
+mihomo convert-ruleset ipcidr yaml "$MERGED_YAML" "$MERGED_MRS"
+
 # 统计
-unique_count=$(wc -l < "${TEMP_IP_LIST}.uniq")
+unique_count=$(wc -l < "$MERGED_LIST")
 
 # 完成提示
 echo "✅ 成功生成:"

@@ -1,2 +1,3 @@
 *.bak
+.tmp/**
 removed_reserved_ips.log
